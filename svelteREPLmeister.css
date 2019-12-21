@@ -1,0 +1,71 @@
+body {
+    --SRMcolor: lightgreen;
+    --SRMbackground: green;
+
+    --SRMhistoryBackground: beige;
+}
+
+/* (ab)use #sapper for higher Specificity */
+#sapper .file-tabs .button.active {
+    background: var(--SRMbackground);
+    font-weight: bold;
+    color: var(--SRMcolor);
+}
+
+#sapper .SRMmanagedTab,
+.SRMequalValue {
+    color: var(--SRMbackground);
+    font-weight: bold;
+}
+
+#SRMheader {
+    color: var(--SRMcolor);
+}
+
+#SRMsearch {
+    width: 9em;
+    margin-right: 2em;
+}
+
+#SRMHistory {
+    z-index: 10;
+    position: absolute;
+    top: 0;
+    right: 1em;
+    cursor: pointer;
+    color: var(--SRMbackground);
+}
+
+#SRMHistory:hover {
+    zoom: 1.2;
+}
+
+#SRMHistoryList {
+    background: var(--SRMhistoryBackground);
+    color: darkslategray;
+}
+
+#SRMHistoryList [tabid] {
+    width: 8em;
+}
+
+#SRMaddHistory:hover,
+.SRMrestoreHistory:hover {
+    background: var(--SRMbackground);
+    color: orange;
+}
+
+.SRMdeleteHistory {
+    float: right;
+    padding-right: .5em;
+}
+
+.SRMdeleteHistory:hover {
+    font-weight: bold;
+    color: red;
+    margin-right: .5em;
+}
+
+#SRMHistoryList [tabid]:last-child .SRMdeleteHistory {
+    display: none;
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Svelte REPL Meister</title>
+    <style>
+        body {
+            min-width: 50vw;
+            font-family: arial;
+        }
+
+        H1 {
+            break-inside: avoid;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Svelte&nbsp;REPL&nbsp;Meister&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    </h1>
+
+    <div id=Instructions>Run me on a <b>https://svelte.dev/</b> site</div>
+    <div id=Options hidden>
+        Injects code on https://svelte.dev/repl pages to:
+        <ul>
+            <li>Auto save all tabs (on each tab switch event)</li>
+            <li>Search in processed tabs</li>
+            <li>Maintain Scroll position when switching tabs</li>
+            <li>Track last error Tab ID (not on first page load)</li>
+            <li>Content History per Tab</li>
+        </ul>
+    </div>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>
