@@ -1,20 +1,22 @@
-console.clear();
 !(function addSvelteMeister() {
     const APPtitle = `Svelte REPL Meister`;    // autosave, errortracking, scroll pin/save, search, history
 
     // one name for id and localStorage variables
-    var constSRMerror = 'SRMerror';
-    var constSRMsearch = 'SRMsearch';
-    var constSRMcurrent = 'SRMcurrent';
-    var constrSRMaddhistory = "SRMaddHistory";
-    var constrSRMhistorylist = "SRMHistoryList";
-    var constSRMfirstload = 'First load';
-    var constSRMlastErrorTab = 'lastErrorTab';
+    const constSRMerror = 'SRMerror';
+    const constSRMsearch = 'SRMsearch';
+    const constSRMcurrent = 'SRMcurrent';
+    const constrSRMaddhistory = "SRMaddHistory";
+    const constrSRMhistorylist = "SRMHistoryList";
+    const constSRMfirstload = 'First load';
+    const constSRMlastErrorTab = 'lastErrorTab';
 
     // !! Svelte REPL deletes and creates new CodeMirror instance on each Tab switch
     // !! so we need to grab the correct DOM element every time
     const $CM = () => $class('CodeMirror').CodeMirror;
     const $CMdoc = () => $CM().doc;
+
+    let saveAllDelayInterval;
+    let saveAllDelayTime = 1e3 * 60;// after 60 seconds inactivity
 
     log('starting');
 
@@ -366,6 +368,9 @@ console.clear();
                     console.error($store(constSRMlastErrorTab));
                 }
             });
+
+            clearInterval(saveAllDelayInterval);
+            saveAllDelayInterval = setInterval(SvelteREPL_saveAllFiles, saveAllDelayTime);
             //tabs.currentTab.saveHistory();
         });
         addCodeMirrorEvent("keyHandled", function (cm, keyname, evt) {
