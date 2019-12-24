@@ -1,24 +1,30 @@
+
+//!! Injected in every https://svelte.dev/repl page:
+
 !(function addSvelteMeister() {
+
     const APPtitle = `Svelte REPL Meister`;    // autosave, errortracking, scroll pin/save, search, history
 
     // one name for id and localStorage variables
-    const constSRMerror = 'SRMerror';
-    const constSRMsearch = 'SRMsearch';
-    const constSRMcurrent = 'SRMcurrent';
+    const constSRMerror = "SRMerror";
+    const constSRMsearch = "SRMsearch";
+    const constSRMcurrent = "SRMcurrent";
     const constrSRMaddhistory = "SRMaddHistory";
     const constrSRMhistorylist = "SRMHistoryList";
-    const constSRMfirstload = 'First load';
-    const constSRMlastErrorTab = 'lastErrorTab';
+    const constSRMrestoreHistory = "SRMrestoreHistory";
+    const constSRMdeleteHistory = "SRMdeleteHistory";
+    const constSRMfirstload = "First load";
+    const constSRMlastErrorTab = "lastErrorTab";
 
     // !! Svelte REPL deletes and creates new CodeMirror instance on each Tab switch
     // !! so we need to grab the correct DOM element every time
-    const $CM = () => $class('CodeMirror').CodeMirror;
+    const $CM = () => $class("CodeMirror").CodeMirror;
     const $CMdoc = () => $CM().doc;
 
     let saveAllDelayInterval;
-    let saveAllDelayTime = 1e3 * 60;// after 60 seconds inactivity
+    let saveAllDelayTime = 1000 * 60;// after 60 seconds inactivity
 
-    log('starting');
+    log("starting");
 
     function SRM_handleTabClick(evt) {
         // todo prevent doubleclick
@@ -26,7 +32,7 @@
         // !! the CodeMirror editor is destroyed/created by the Svelte REPL on each tab switch
         // !! this click function executes *after* those new DOM elements are created
 
-        add_SRM_errorHandler();
+        check_for_Svelte_Errors_report_to_console();
 
         $SvelteREPL_tabButton = SvelteREPL_findTabButton(evt.path);
 
@@ -34,10 +40,10 @@
 
         if (!tabManager.has(tabid)) {
             tabManager.addTab(tabid)
-            $SvelteREPL_tabButton.classList.add('SRMmanagedTab');
+            $SvelteREPL_tabButton.classList.add("SRMmanagedTab");
         } else {
             // tabs.currentTab points to previous tab?
-            // log('current after switch',tabManager.previousTab.tabid,tabManager.currentTab.tabid);
+            // log("current after switch",tabManager.previousTab.tabid,tabManager.currentTab.tabid);
             tabManager.selectTab(tabid);
         }
 
@@ -52,12 +58,35 @@
         SvelteREPL_CodeMirror_EventHandlers();
     }
 
-    /***************************************************************************************************************/
+
+    /** classes ************************************************************************************************************
+     * 
+     * SRMTabManager
+     * - has(id)
+     * - addTab(id)
+     * - selectTab(id)
+     * - get tabEntries()
+     * - get previousTab()
+     * - get currentTab()
+     * - saveHistory()
+     *    SRMTab
+     *    - saveEditorContent(changeObj)
+     *    - saveHistory(label)
+     *    - deleteHistory(historyid)
+     *    - get Historyentries()
+     *       SRMHistories
+     *       - save([historid])
+     *          SRMTabHistory
+     *          - update(conten)
+     *          - restore()
+     *          - remove()
+     * 
+     */
     class SRMTabHistory {
         constructor(tabid, historyid) {
             this.tabid = tabid;
             this.historyid = historyid;
-            log('new History', tabid);
+            log("new History", tabid);
             this.value = $CMdoc().getValue();
         }
         update(content) {
@@ -77,14 +106,14 @@
             this.tabid = tabid;
         }
         save(historyid = new Date() / 1) {
-            log('saveHistory', historyid, this.size);
+            log("saveHistory", historyid, this.size);
             this.set(historyid, new SRMTabHistory(this.tabid, historyid));
         }
     }
     class SRMTab {
         constructor(tabid) {
             this.tabid = tabid;
-            this.value = '';
+            this.value = "";
             this.histories = new SRMHistories(tabid);
             this._LINE = 0;          // line number
             this._CH = 0;            // character number in line
@@ -98,7 +127,7 @@
                 this._LINE = changeObj.from.line + 1;
                 this._CH = changeObj.from.ch;
             }
-            //let latest=this.histories.get('latest');
+            //let latest=this.histories.get("latest");
             //if(latest)latest.update(this.value);
         }
         saveHistory(label) {
@@ -111,7 +140,6 @@
             return [...this.histories.entries()];
         }
     }
-
     class SRMTabManager {
         constructor() {
             this._previousTab = false;
@@ -145,78 +173,10 @@
         }
     }
 
-    function showHistoryList() {
-        //let allowPointerEvents = x => $id(constrSRMaddhistory).style.pointerEvents = x||'auto';
-
-        let $history = $id(constrSRMhistorylist);
-        if ($history) {
-            $history.innerHTML = '';
-        } else {
-            let $List = $class('CodeMirror').appendChild(document.createElement('DIV'));
-            $List.id = "SRMHistory";
-            $List.innerHTML = `<b id="${constrSRMaddhistory}">History +</b><div id="${constrSRMhistorylist}"></div>`;
-            addEvent({
-                selector: '#SRMaddHistory',
-                //debounce: 2000,
-                func: evt => {
-                    //allowPointerEvents('none');
-                    tabManager.saveHistory();
-                    showHistoryList();
-                    //setTimeout( () => allowPointerEvents() , 2000 );
-                }
-            });
-        }
-
-        (tabManager.currentTab.Historyentries).forEach(addHistoryItemHTML);
-    }
-
-    function date2time(timestamp) {
-        if (typeof timestamp === 'string') return timestamp;
-        let D = new Date(timestamp);
-        let pad = x => String(x).padStart(2, '0');
-        return pad(D.getHours()) + ":" + pad(D.getMinutes()) + ":" + pad(D.getSeconds());
-    }
-
-    function addHistoryItemHTML(entry) {
-        let [historyid, SRMHistoryItem] = entry;
-
-        const _attr_TABID_______ = 'tabid';
-        const _attr_HISTORYID___ = 'historyid';
-
-        const historyIsSameAsEditor = tabManager.currentTab.value === SRMHistoryItem.value;
-
-        const SPAN = (className, content) => `<span class="${className}">${content}</span>`;
-        const HTMLrestoreLabel = SPAN("SRMrestoreHistory", date2time(historyid));
-        const HTMLdeleteLabelX = SPAN("SRMdeleteHistory", "X")
-
-        const restoreHistory = evt => {
-            SRMHistoryItem.restore();
-            showHistoryList();
-        }
-        const removeHistory = evt => {
-            $button.remove();
-            SRMHistoryItem.remove($button)
-            showHistoryList();
-        };
-
-        const addClick = (selector, func) => addEvent({ element: $button, selector, func });
-
-        //create DOM element in HistoryList
-        let $button = document.createElement('DIV');
-        $button.setAttribute(_attr_TABID_______, SRMHistoryItem.tabid);
-        $button.setAttribute(_attr_HISTORYID___, historyid);
-        $button.classList.toggle('SRMequalValue', historyIsSameAsEditor);
-        $button.innerHTML = HTMLrestoreLabel + HTMLdeleteLabelX;
-
-        $id(constrSRMhistorylist).prepend($button);  // latest at the top
-
-        addClick('.SRMrestoreHistory', restoreHistory);
-        addClick('.SRMdeleteHistory', removeHistory);
-    }
-
+    //!! Init
     const tabManager = new SRMTabManager();              // store all Tab data
 
-    let $SvelteREPL_tabButton = $id('App');  // initial/first Svelte REPL tab // todo get tab from localStorage
+    let $SvelteREPL_tabButton = $id("App");  // initial/first Svelte REPL tab // todo get tab from localStorage
 
     window.stabs = tabManager;// for debugging purposes
 
@@ -224,34 +184,50 @@
 
     add_SRM_SearchBoxListener();
 
-    $class('file-tabs').addEventListener('click', SRM_handleTabClick); // one click event for all Svelte Tabs
+    $class("file-tabs").addEventListener("click", SRM_handleTabClick); // one click event for all Svelte Tabs
 
-    log('enabled');
+    log("enabled");
 
     $SvelteREPL_tabButton.click();// click first tab 
 
 
-
-    // hoisted variables &functions -------------------------------------------------------------------------------
+    /** hoisted functions ************************************************************************************************************
+     * $(selector)
+     * $class(classname)
+     * $id(id)
+     * addEvent(...)
+     * throttled(delay,func)
+     * log(...arguments)
+     * add_SRM_GUI_Interface()
+     * add_SRM_SearchBoxListener()
+     * check_for_Svelte_Errors_report_to_console()
+     * SvelteREPL_findTabButton(evtpath)
+     * SvelteREPL_saveAllFiles()
+     * SvelteREPL_track_and_restore_ScrollPosition()
+     * SvelteREPL_CodeMirror_EventHandlers()
+     * showHistoryList()
+     * date2time(timestamp)
+     * addHistoryItemHTML(entry)
+     */
 
     function $(x) {
         return document.querySelector(x);
     }
     function $class(x) {
-        return $('.' + x);
+        return $("." + x);
     }
     function $id(x) {
-        return $('#' + x);
+        return $("#" + x);
     }
     function $store(x, y = false) {
-        return localStorage[(y ? 'set' : 'get') + 'Item'](x, y);
+        return localStorage[(y ? "set" : "get") + "Item"](x, y);
     }
 
     function addEvent({
         element = document,
-        eventtype = 'click',
-        selector = console.error('addEvent: missing selector'),
-        func = console.error('addEvent: missing function declaration')
+        eventtype = "click",
+        selector = console.error("addEvent: missing selector"),
+        func = console.error("addEvent: missing function declaration")
     }) {
         element.querySelector(selector).addEventListener(eventtype, throttled(1000, func));
     }
@@ -270,7 +246,7 @@
 
     // using console.info because console.log is overwritten in (my) other extensions
     function log() {
-        console.info(`%c ${APPtitle}: `, 'background:#FF3E00;color:white', ...arguments); // svelte --prime color background
+        console.info(`%c ${APPtitle}: `, "background:#FF3E00;color:white", ...arguments); // svelte --prime color background
     }
 
     function add_SRM_GUI_Interface() {
@@ -280,17 +256,17 @@
         let HTMLheader = `<div id=SRMheader>${APPtitle} - ${HTMLsearch} - ${HTMLerror}<span class=${constSRMcurrent}></span>&nbsp;&nbsp;</div>`;
 
         if (!$id("SRMheader"))
-            $class('app-controls').insertAdjacentHTML('afterbegin', HTMLheader);
+            $class("app-controls").insertAdjacentHTML("afterbegin", HTMLheader);
     }
 
 
     function add_SRM_SearchBoxListener() {
         let searchInput = $id(constSRMsearch);
-        if (searchInput) searchInput.addEventListener('keyup', SRM_processSearch);//end search code
+        if (searchInput) searchInput.addEventListener("keyup", SRM_processSearch);//end search code
 
         //hoisted functions
         function SRM_processSearch(evt) {
-            if (evt.key === 'Enter') {
+            if (evt.key === "Enter") {
                 let txt = evt.target.value;
                 log(`Searched: ${txt} `);
 
@@ -299,15 +275,15 @@
                 const txtmatches = str => str.match(new RegExp(txt, "g"));
                 const countOccurences = (str, matches = txtmatches(str)) => matches ? matches.length : 0;
                 const highlightedSentence = str => str.trim().split(txt).join(`%c${txt}%c`);
-                const logSearchResult = x => console.info(x, 'background:lightgreen', 'background:white');// multiple occurences are not highlighted
+                const logSearchResult = x => console.info(x, "background:lightgreen", "background:white");// multiple occurences are not highlighted
 
                 for (let [tabid, tab] of tabManager.tabEntries) {
 
-                    const consoleSentence = ([linenr, str]) => countOccurences(str) + ` found in: ${tabid}\t line: ` + linenr + ' \t ' + highlightedSentence(str);
+                    const consoleSentence = ([linenr, str]) => countOccurences(str) + ` found in: ${tabid}\t line: ` + linenr + " \t " + highlightedSentence(str);
                     const showLineInConsole = x => logSearchResult(consoleSentence(x));
 
                     tab.value// process one tab editor contents (from memory)
-                        .split('\n')
+                        .split("\n")
                         // lines become array items: [ linenr , text ]
                         .map(foundTextLine)
                         .filter(validLines)
@@ -317,26 +293,26 @@
         }
     }// addSearchBoxListener
 
-    function add_SRM_errorHandler() {
+    function check_for_Svelte_Errors_report_to_console() {
         if (tabManager.currentTab) {
-            if ($('.message.error')) {
+            if ($(".message.error")) {
                 let lastError = $store(constSRMerror);
                 if (lastError) {
-                    console.error('%c Last Svelte Error in: ', 'background:red;color:white', lastError);
+                    console.error("%c Last Svelte Error in: ", "background:red;color:white", lastError);
                 } else {
                     $store(constSRMerror, tabManager.currentTab.id);
-                    //window.alert('Error in: ' + lastError);
+                    //window.alert("Error in: " + lastError);
                 }
-                $id(constSRMerror).innerHTML = 'last error in: ' + $store(constSRMerror);
+                $id(constSRMerror).innerHTML = "last error in: " + $store(constSRMerror);
             } else {
-                $id(constSRMerror).innerHTML = '';
+                $id(constSRMerror).innerHTML = "";
                 localStorage.removeItem(constSRMerror);
             }
         }
     }
 
     function SvelteREPL_findTabButton(evtpath) {
-        const isButton = x => evtpath[x].classList.contains('button');
+        const isButton = x => evtpath[x].classList.contains("button");
         const isDocument = x => evtpath[x] === document;
         const notButtonTab = x => !isButton(x) && !isDocument(x);
         let idx = 0;
@@ -349,9 +325,9 @@
     }
 
     function SvelteREPL_track_and_restore_ScrollPosition() {
-        const saveTabScollPosition = evt => tabManager.currentTab.scrollTop = $class('CodeMirror-scroll').scrollTop;
-        $class('CodeMirror-scroll').addEventListener('scroll', saveTabScollPosition);
-        $class('CodeMirror-scroll').scrollTop = tabManager.currentTab.scrollTop; // restore scoll position
+        const saveTabScollPosition = evt => tabManager.currentTab.scrollTop = $class("CodeMirror-scroll").scrollTop;
+        $class("CodeMirror-scroll").addEventListener("scroll", saveTabScollPosition);
+        $class("CodeMirror-scroll").scrollTop = tabManager.currentTab.scrollTop; // restore scoll position
     }
 
     function SvelteREPL_CodeMirror_EventHandlers() {
@@ -363,7 +339,7 @@
             //log("change", tabManager.currentTab.id);
             tabManager.currentTab.saveEditorContent(changeObj);
             setTimeout(() => {
-                if ($('.message.error')) {
+                if ($(".message.error")) {
                     $store(constSRMlastErrorTab, `${tabManager.currentTab.id}:${tabManager.currentTab._LINE}`);
                     console.error($store(constSRMlastErrorTab));
                 }
@@ -376,6 +352,68 @@
         addCodeMirrorEvent("keyHandled", function (cm, keyname, evt) {
             log("", keyname);
         });
+    }
+
+    function showHistoryList() {
+
+        let $history = $id(constrSRMhistorylist);
+        if ($history) {
+            $history.innerHTML = "";
+        } else {
+            let $List = $class("CodeMirror").appendChild(document.createElement("DIV"));
+            $List.id = "SRMHistory";
+            $List.innerHTML = `<b id="${constrSRMaddhistory}">History +</b><div id="${constrSRMhistorylist}"></div>`;
+            addEvent({
+                selector: "#" + constrSRMaddhistory,
+                func: evt => {
+                    tabManager.saveHistory();
+                    showHistoryList();
+                }
+            });
+        }
+
+        (tabManager.currentTab.Historyentries).forEach(addHistoryItemHTML);
+    }
+
+    function date2time(timestamp) {
+        if (typeof timestamp === "string") return timestamp;
+        let D = new Date(timestamp);
+        let pad = x => String(x).padStart(2, "0");
+        return pad(D.getHours()) + ":" + pad(D.getMinutes()) + ":" + pad(D.getSeconds());
+    }
+
+    function addHistoryItemHTML(entry) {
+        let [historyid, SRMHistoryItem] = entry;
+
+        const historyIsSameAsEditor = tabManager.currentTab.value === SRMHistoryItem.value;
+
+        const SPAN = (className, content) => `<span class="${className}">${content}</span>`;
+        const HTMLrestoreLabel = SPAN(constSRMrestoreHistory, date2time(historyid));
+        const HTMLdeleteLabelX = SPAN(constSRMdeleteHistory, "X")
+
+        const restoreHistory = evt => {
+            SRMHistoryItem.restore();
+            showHistoryList();
+        }
+        const removeHistory = evt => {
+            $button.remove();
+            SRMHistoryItem.remove($button)
+            showHistoryList();
+        };
+
+        const addClick = (selector, func) => addEvent({ element: $button, selector, func });
+
+        //create DOM element in HistoryList
+        let $button = document.createElement("DIV");
+        $button.setAttribute("tabid", SRMHistoryItem.tabid);
+        $button.setAttribute("historyid", historyid);
+        $button.classList.toggle("SRMequalValue", historyIsSameAsEditor);
+        $button.innerHTML = HTMLrestoreLabel + HTMLdeleteLabelX;
+
+        $id(constrSRMhistorylist).prepend($button);  // latest at the top
+
+        addClick("." + constSRMrestoreHistory, restoreHistory);
+        addClick("." + constSRMdeleteHistory, removeHistory);
     }
 
 })();

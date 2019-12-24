@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
     "name": "Svelte REPL Meister",
-    "description": "Enhances the Svelte REPL with: Auto-save, Code Search, Scroll location saving, Error tracking and History per Tab",
-    "version": "0.21.0",
+    "description": "Adds Auto-save, Global Search, Scroll position saving and Code History per Tab",
+    "version": "0.2",
     "icons": {
         "16": "16.png",
         "48": "48.png",

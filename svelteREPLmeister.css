@@ -36,10 +36,6 @@ body {
     color: var(--SRMbackground);
 }
 
-#SRMHistory:hover {
-    zoom: 1.2;
-}
-
 #SRMHistoryList {
     background: var(--SRMhistoryBackground);
     color: darkslategray;
