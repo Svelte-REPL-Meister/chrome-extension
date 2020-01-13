@@ -5,5 +5,5 @@ window.addEventListener('load', () => {
             let $Script = document.createElement('script');
             $Script.src = chrome.runtime.getURL('svelteREPLmeister.js');
             document.head.append($Script);
-        }, 2000);// brutal delay should be enough (only at the start of your REPL session)
+        }, 3000);// brutal delay should be enough (only at the start of your REPL session)
 });

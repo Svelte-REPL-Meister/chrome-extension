@@ -12,6 +12,11 @@ body {
     color: var(--SRMcolor);
 }
 
+#sapper .file-tabs .button:hover {
+    background: lightgreen;
+    cursor: pointer;
+}
+
 #sapper .SRMmanagedTab,
 .SRMequalValue {
     color: var(--SRMbackground);

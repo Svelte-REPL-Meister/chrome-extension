@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "Svelte REPL Meister",
     "description": "Adds Auto-save, Global Search, Scroll position saving and Code History per Tab",
-    "version": "0.2",
+    "version": "1.2",
     "icons": {
         "16": "16.png",
         "48": "48.png",

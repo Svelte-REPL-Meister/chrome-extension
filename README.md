@@ -55,6 +55,8 @@ The searchbox searches all these (green/seen) Tabs and outputs the results to th
 
 ![](https://i.imgur.com/4yaqdtl.jpg)
 
+Double click a word in the source code to search (in green/seen tabs)
+
 'Unload' green/seen tabs by reloading the whole REPL
 
 ## Source code History - per Tab
