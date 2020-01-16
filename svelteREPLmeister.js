@@ -3,6 +3,8 @@
 // Adds Auto-save, Global Search, Scroll position saving and Code History per Tab
 // Injected in every https://svelte.dev/repl page:
 
+// Store: https://chrome.google.com/webstore/detail/svelte-repl-meister/nmncamfbjoeickkimpgfghdiklhfbikh
+
 // GitHub: https://github.com/Svelte-REPL-Meister/chrome-extension
 
 // LICENSE: unlicense.org
@@ -23,8 +25,10 @@
 // Update versionnr in manifest.json
 // add version comments above
 // publish code to GitHub: commit, push
-// create ZIP file
-// upload ZIP in Google Developers dashboard
+// create ZIP file (open Explorer, dragged newer files into svelteREPLmeister.zip)
+// upload ZIP in Google Developers dashboard (https://chrome.google.com/webstore/devconsole) (package->Upload Updated package)
+// Copy version comments to Extension description
+// Save Draft, Publish
 
 !(function addSvelteMeister() {
 

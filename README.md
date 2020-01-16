@@ -27,6 +27,19 @@ Enhances the [Svelte REPL: https://svelte.dev/repl/](https://svelte.dev/repl/) w
 
 6. The REPL extension will now activate on any https://svelte.dev/repl page
 
+## Important: use the F12 Console
+
+The Svelte REPL Meister uses advanced Console functionalities **not** available the Console Svelte outputs to.
+
+Open the F12 Console by clicking inside the Svelte result window, selecting Inspect  
+(or select the ```about:srcdoc``` console in your open F12 console)
+
+## Importing the Chrome Extension in Microsoft Edge
+
+* open __edge://extensions__
+* turn on __Allow extensions from other stores__
+* install the Svelte REPL Meister extension from the [Chrome Web Store](https://chrome.google.com/webstore/detail/svelte-repl-meister/nmncamfbjoeickkimpgfghdiklhfbikh)
+
 # Features
 
 ## Autosave
